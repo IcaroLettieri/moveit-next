@@ -13,7 +13,6 @@ export default function Home() {
       <Head>
         <title>Inicio | move.it</title>
       </Head>
-
       <ExperienceBar />
 
       <section>
