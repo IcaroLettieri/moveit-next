@@ -1,5 +1,6 @@
 import { createContext, ReactNode, useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
+import { useRouter } from 'next/router';
 
 import challenges from '../../challenges.json';
 import { LevelUpModal } from '../components/LevelUpModal';
@@ -15,12 +16,15 @@ interface ChallengesContextValue {
   currentExperience: number;
   experienceToNextLevel: number;
   challengesCompleted: number;
+  usernameGithub: string;
+  avatarUrl: string;
   activeChallenge: Challenge;
   levelUp: () => void;
   startNewChallenge: () => void;
   resetChallenge: () => void;
   completeChallange: () => void;
   closeLevelUpModal: () => void;
+  logout: () => void;
 }
 
 interface ChallengesProviderProps {
@@ -28,14 +32,21 @@ interface ChallengesProviderProps {
   level: number; 
   currentExperience: number; 
   challengesCompleted: number;
+  usernameGithub: string;
+  avatarUrl: string;
 }
 
 export const ChallengesContext = createContext({} as ChallengesContextValue);
 
 export function ChallengesProvider({ children, ...rest }: ChallengesProviderProps) {
+  const router = useRouter();
+
   const [level, setLevel] = useState(rest.level ?? 1);
   const [currentExperience, setCurrentExperience] = useState(rest.currentExperience ?? 0);
   const [challengesCompleted, setChallengesCompleted] = useState(rest.challengesCompleted ?? 0);
+
+  const [usernameGithub, setUsernameGithub] = useState(rest.usernameGithub ?? null);
+  const [avatarUrl, setAvatarUrl] = useState(rest.avatarUrl ?? null);
   
   const [activeChallenge, setActiveChallenge] = useState(null);
   const [isLevelUpModalOpen, setIsLevelUpModalOpen] = useState(false);
@@ -44,6 +55,10 @@ export function ChallengesProvider({ children, ...rest }: ChallengesProviderProp
 
   useEffect(() => {
     Notification.requestPermission();
+
+    if(!usernameGithub || !avatarUrl){
+      router.push('/login');
+    }
   }, []);
 
   useEffect(() => {
@@ -99,17 +114,29 @@ export function ChallengesProvider({ children, ...rest }: ChallengesProviderProp
     setChallengesCompleted(challengesCompleted + 1);
   }
 
+  function logout() {
+    Cookies.set('usernameGithub', '');
+    Cookies.set('avatarUrl', '');
+    setUsernameGithub('');
+    setAvatarUrl('');
+    
+    router.push('/login');
+  }
+
   const valueProvider: ChallengesContextValue = {
     level,
     currentExperience,
     experienceToNextLevel,
     challengesCompleted,
     activeChallenge,
+    usernameGithub,
+    avatarUrl,
     levelUp,
     startNewChallenge,
     resetChallenge,
     completeChallange,
-    closeLevelUpModal
+    closeLevelUpModal,
+    logout
   }
 
   return (
